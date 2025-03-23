@@ -1,5 +1,6 @@
 import pandas as pd
 import re
+from utils import merge_group
 
 # Load dataset
 file_path = 'veridion_product_deduplication_challenge.snappy.parquet'
@@ -29,35 +30,8 @@ def print_duplicates(data_group):
         # Show up to 10 duplicates
         for name, group in list(data_group)[0:10]:
             f.write(f" Group: '{name}' —> {len(group)} entries\n")
-            f.write(group[['product_name', 'product_title','brand', 'price', 'description']].to_string(index=False))
+            f.write(group[['product_name', 'product_title','brand', 'price', 'page_url', 'description']].to_string(index=False))
             f.write("\n\n" + "-"*100 + "\n\n")
-
-def merge_group(group):
-    merged = {}
-
-    for col in group.columns:
-        # Drop NaN values
-        series = group[col].dropna()
-
-        # Flatten lists to strings
-        flat_vals = []
-        for val in series:
-            if isinstance(val, (list, dict)):
-                flat_vals.append(str(val))
-            else:
-                flat_vals.append(str(val).strip())
-
-        # Remove empty strings
-        flat_vals = [val for val in flat_vals if val != '']
-
-        if not flat_vals:
-            merged[col] = None
-        elif len(set(flat_vals)) == 1: # Same values, keep one
-             merged[col] = flat_vals[0]
-        else:
-            merged[col] = '; '.join(sorted(set(flat_vals)))
-
-    return pd.Series(merged)
 
 # Function to convert lists/dicts to strings before parquet file
 def lists_or_dicts_to_string(df):
@@ -76,17 +50,19 @@ filtered_groups = [(key, group) for key, group in grouped if len(group) > 1]
 # Get non dups and concatenate them
 non_duplicate_groups = [group for _, group in grouped if len(group) == 1]
 non_duplicates = pd.concat(non_duplicate_groups)
+non_duplicates = add_normalized_fields(non_duplicates)
 
 # Merge all groups
 merged_entries = pd.concat([merge_group(group) for _, group in filtered_groups])
 merged_entries = add_normalized_fields(merged_entries)
 
+
 data_post_merge = pd.concat([non_duplicates, merged_entries], ignore_index=True)
 
 # Verify if there are dups in final_data
-grouped2 = data_post_merge.groupby(['normalized_name', 'normalized_title', 'normalized_brand'])
-filtered2_groups = [(key, group) for key, group in grouped2 if len(group) > 1]
-print_duplicates(filtered2_groups)
+# grouped2 = data_post_merge.groupby(['normalized_name','normalized_title', 'normalized_brand'])
+# filtered2_groups = [(key, group) for key, group in grouped2 if len(group) > 1]
+# print_duplicates(filtered2_groups)
 
 # Parquet file with normalised fields
 final_data_stringed = lists_or_dicts_to_string(data_post_merge)

@@ -35,3 +35,5 @@ miscellaneous_features                                                          
 description                             The "Warping Board" is designed for use with f...
 
 The best main colums to find dups are product_title, product_name, brand.
+I considered duplicates the products with the same product_title, product_name, brand after a great
+number of tests.
