@@ -1,4 +1,4 @@
------ Veridion Product Deduplication — README
+  Veridion Product Deduplication — README
 -Objective-
   The goal of this project is to identify and merge duplicate product entries in a dataset of scraped product data. These duplicates often arise due to inconsistent naming, branding, color formats, or feature descriptions.
 
