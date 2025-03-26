@@ -3,12 +3,12 @@ import numpy as np
 from utils import merge_group, add_normalized_fields
 
 # Load dataset
-file_path = 'veridion_product_deduplication_challenge.snappy.parquet'
+file_path = 'input/veridion_product_deduplication_challenge.snappy.parquet'
 data = pd.read_parquet(file_path)
 
 # Function to print duplicates for verification
 def print_duplicates(data_group):
-    output_file = 'potential_duplicates.txt'
+    output_file = 'checker_output/potential_duplicates.txt'
 
     with open(output_file, 'w', encoding='utf-8') as f:
         f.write(f"Showing details for first {min(20, len(data_group))} duplicate groups:\n\n")
@@ -84,15 +84,15 @@ data_post_merge['eco_friendly'] = data_post_merge['eco_friendly'].astype(object)
 
 
     # Verify if there are dups in final_data #
-# grouped2 = data_post_merge.groupby(['normalized_name','normalized_title', 'normalized_brand'])
-# filtered2_groups = [(key, group) for key, group in grouped2 if len(group) > 1]
-# print_duplicates(filtered2_groups)
+grouped2 = data_post_merge.groupby(['normalized_name','normalized_title', 'normalized_brand'])
+filtered2_groups = [(key, group) for key, group in grouped2 if len(group) > 1]
+print_duplicates(filtered2_groups)
 
 final_data = fix_before_parq(data_post_merge)
 
     # Parquet file with normalised fields #
-# final_data.to_parquet('final_deduplicated.parquet', index=False)
+# final_data.to_parquet('deduplicated_parquets/final_deduplicated.parquet', index=False)
 
 # Parquet file with no normalised fields
 final_data_nonormal = final_data.drop(columns=['normalized_name', 'normalized_title', 'normalized_brand'])
-final_data_nonormal.to_parquet('final_clean_deduplicated.parquet', index=False)
+final_data_nonormal.to_parquet('deduplicated_parquets/final_clean_deduplicated.parquet', index=False)
