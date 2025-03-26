@@ -1,4 +1,4 @@
-# Veridion Product Deduplication
+# Product Deduplication
 
 ## Objective
 
